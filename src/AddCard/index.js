@@ -1,30 +1,16 @@
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
-import { readDeck, createCard } from "../utils/api";
+import React, { useState } from "react";
+import { useParams, useNavigate, Link, useOutletContext } from "react-router-dom";
+import { createCard, readDeck } from "../utils/api";
 import CardForm from "../CardForm";
 
 function AddCard() {
   const { deckId } = useParams();
   const navigate = useNavigate();
-  const [deck, setDeck] = useState(null);
+  const { deck, setDeck } = useOutletContext();
   const [formData, setFormData] = useState({
     front: "",
     back: "",
   });
-
-  useEffect(() => {
-    async function loadDeck() {
-      const abortController = new AbortController();
-      try {
-        const response = await readDeck(deckId, abortController.signal);
-        setDeck(response);
-      } catch (error) {
-        console.error("Error loading deck:", error);
-      }
-      return () => abortController.abort();
-    }
-    loadDeck();
-  }, [deckId]);
 
   const handleChange = (event) => {
     setFormData({
@@ -38,7 +24,10 @@ function AddCard() {
     const abortController = new AbortController();
     try {
       await createCard(deckId, formData, abortController.signal);
-      setFormData({ front: "", back: "" }); // Clear form
+      setFormData({ front: "", back: "" });
+      const updatedDeck = await readDeck(deckId, abortController.signal);
+      setDeck(updatedDeck); 
+      navigate(`/decks/${deckId}`);
     } catch (error) {
       console.error("Error creating card:", error);
     }
@@ -57,7 +46,7 @@ function AddCard() {
       <nav aria-label="breadcrumb">
         <ol className="breadcrumb">
           <li className="breadcrumb-item">
-            <a href="/">Home</a>
+            <Link to="/">Home</Link>
           </li>
           <li className="breadcrumb-item active" aria-current="page">
             {deck.name}

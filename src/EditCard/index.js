@@ -1,32 +1,30 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, Link, useOutletContext } from "react-router-dom";
 import { readDeck, readCard, updateCard } from "../utils/api";
 import CardForm from "../CardForm";
 
 function EditCard() {
   const { deckId, cardId } = useParams();
   const navigate = useNavigate();
-  const [deck, setDeck] = useState(null);
+  const { deck, setDeck } = useOutletContext();
   const [formData, setFormData] = useState({
     front: "",
     back: "",
   });
 
   useEffect(() => {
-    async function loadDeckAndCard() {
+    async function loadCard() {
       const abortController = new AbortController();
       try {
-        const deckResponse = await readDeck(deckId, abortController.signal);
-        setDeck(deckResponse);
         const cardResponse = await readCard(cardId, abortController.signal);
         setFormData({ front: cardResponse.front, back: cardResponse.back });
       } catch (error) {
-        console.error("Error loading deck or card:", error);
+        console.error("Error loading card:", error);
       }
       return () => abortController.abort();
     }
-    loadDeckAndCard();
-  }, [deckId, cardId]);
+    loadCard();
+  }, [cardId]);
 
   const handleChange = (event) => {
     setFormData({
@@ -40,6 +38,8 @@ function EditCard() {
     const abortController = new AbortController();
     try {
       await updateCard({ ...formData, id: cardId, deckId: Number(deckId) }, abortController.signal);
+      const updatedDeck = await readDeck(deckId, abortController.signal);
+      setDeck(updatedDeck);
       navigate(`/decks/${deckId}`);
     } catch (error) {
       console.error("Error updating card:", error);
@@ -59,7 +59,7 @@ function EditCard() {
       <nav aria-label="breadcrumb">
         <ol className="breadcrumb">
           <li className="breadcrumb-item">
-            <a href="/">Home</a>
+            <Link to="/">Home</Link>
           </li>
           <li className="breadcrumb-item active" aria-current="page">
             <Link to={`/decks/${deck.id}`}>{deck.name}</Link>

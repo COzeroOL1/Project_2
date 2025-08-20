@@ -11,10 +11,6 @@ import AddCard from "./AddCard";
 import EditCard from "./EditCard";
 import "./App.css";
 
-/**
- * App is a wrapper for <Layout>, you should not need to change this file.
- */
-
 function App() {
   return (
     <div className="app-routes">
@@ -22,11 +18,12 @@ function App() {
         <Routes>
           <Route exact path="/" element={<Home />} />
           <Route path="/decks/new" element={<CreateDeck />} />
-          <Route exact path="/decks/:deckId" element={<Deck />} />
-          <Route path="/decks/:deckId/edit" element={<EditDeck />} />
-          <Route path="/decks/:deckId/study" element={<Study />} />
-          <Route path="/decks/:deckId/cards/new" element={<AddCard />} />
-          <Route path="/decks/:deckId/cards/:cardId/edit" element={<EditCard />} />
+          <Route path="/decks/:deckId" element={<Deck />}>
+            <Route path="edit" element={<EditDeck />} />
+            <Route path="study" element={<Study />} />
+            <Route path="cards/new" element={<AddCard />} />
+            <Route path="cards/:cardId/edit" element={<EditCard />} />
+          </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Layout>
